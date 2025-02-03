@@ -1,5 +1,5 @@
 provider "aws" {
-  region     = "ap-northeast-3" # Update with your desired region
+  region     = "us-east-1" 
 }
 
 # VPC

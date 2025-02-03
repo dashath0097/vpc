@@ -10,14 +10,14 @@ resource "aws_vpc" "vpc1" {
 }
 
 # Public Subnet
-resource "aws_subnet" "public" {
+resource "aws_subnet" "pub" {
   vpc_id                  = aws_vpc.vpc1.id
   map_public_ip_on_launch = true
   cidr_block              = "192.168.1.0/24"
 }
 
 # Private Subnet
-resource "aws_subnet" "private" {
+resource "aws_subnet" "pri" {
   vpc_id                  = aws_vpc.vpc1.id
   map_public_ip_on_launch = false
   cidr_block              = "192.168.2.0/24"

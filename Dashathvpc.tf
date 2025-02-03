@@ -22,6 +22,20 @@ resource "aws_subnet" "pri" {
   map_public_ip_on_launch = false
   cidr_block              = "192.168.2.0/24"
 }
+# Public Instance
+resource "aws_instance" "public" {
+  ami           = "ami-0453ec754f44f9a4a"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.pub.id
+}
+
+# Private Instance
+resource "aws_instance" "private" {
+  ami           = "ami-0453ec754f44f9a4a"
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.pri.id
+}
+
 
 # Internet Gateway
 resource "aws_internet_gateway" "hathway" {
@@ -71,16 +85,3 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private_routetable.id
 }
 
-# Public Instance
-resource "aws_instance" "public" {
-  ami           = "ami-0453ec754f44f9a4a"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.pub.id
-}
-
-# Private Instance
-resource "aws_instance" "private" {
-  ami           = "ami-0453ec754f44f9a4a"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.pri.id
-}

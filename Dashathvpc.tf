@@ -1,86 +1,74 @@
 provider "aws" {
-  region     = "us-east-1" # Update with your desired region
+  region = "us-east-1"
 }
 
-# VPC
-resource "aws_vpc" "vpc1" {
-  cidr_block              = "192.168.0.0/16"
-  enable_dns_support      = true
-  enable_dns_hostnames    = true
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
 }
 
-# Public Subnet
-resource "aws_subnet" "pub" {
-  vpc_id                  = aws_vpc.vpc1.id
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-  cidr_block              = "192.168.1.0/24"
+  availability_zone       = "us-east-1a"
 }
 
-# Private Subnet
-resource "aws_subnet" "pri" {
-  vpc_id                  = aws_vpc.vpc1.id
-  map_public_ip_on_launch = false
-  cidr_block              = "192.168.2.0/24"
+resource "aws_subnet" "private" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1a"
 }
 
-# Internet Gateway
-resource "aws_internet_gateway" "hathway" {
-  vpc_id = aws_vpc.vpc1.id
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
 }
 
-# Public Route Table
-resource "aws_route_table" "myrout" {
-  vpc_id = aws_vpc.vpc1.id
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.main.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.hathway.id
+    gateway_id = aws_internet_gateway.gw.id
   }
 }
 
-# Associate Public Route Table with Public Subnet
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.pub.id
-  route_table_id = aws_route_table.myrout.id
+resource "aws_route_table_association" "public_assoc" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
-# Elastic IP for NAT Gateway
-resource "aws_eip" "nat_eip" {
-  vpc = true
+resource "aws_eip" "nat" {
+  domain = "vpc"
 }
 
-# NAT Gateway
 resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.pub.id
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public.id
 }
 
-# Private Route Table
-resource "aws_route_table" "private_routetable" {
-  vpc_id = aws_vpc.vpc1.id
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block     = "0.0.0.0/0"
+    cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat.id
   }
 }
 
-# Associate Private Route Table with Private Subnet
-resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.pri.id
-  route_table_id = aws_route_table.private_routetable.id
+resource "aws_route_table_association" "private_assoc" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private_rt.id
 }
 
-# Public Instance
-resource "aws_instance" "public" {
-  ami           = "ami-0453ec754f44f9a4a"
+resource "aws_instance" "public_instance" {
+  ami           = "ami-0c614dee691cbbf37"  
   instance_type = "t2.micro"
-  subnet_id     = "${aws_subnet.pub.id}"
+  subnet_id     = aws_subnet.public.id
+  associate_public_ip_address = true
 }
 
-# Private Instance
-resource "aws_instance" "private" {
-  ami           = "ami-0453ec754f44f9a4a"
+resource "aws_instance" "private_instance" {
+  ami           = "ami-0c614dee691cbbf37" 
   instance_type = "t2.micro"
-  subnet_id     = "${aws_subnet.pri.id}"
+  subnet_id     = aws_subnet.private.id
 }

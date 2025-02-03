@@ -24,7 +24,7 @@ resource "aws_subnet" "pri" {
 }
 
 # Internet Gateway
-resource "aws_internet_gateway" "IG" {
+resource "aws_internet_gateway" "hathway" {
   vpc_id = aws_vpc.vpc1.id
 }
 

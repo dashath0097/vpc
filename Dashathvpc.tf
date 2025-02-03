@@ -6,14 +6,14 @@ resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "pub" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   availability_zone       = "us-east-1a"
 }
 
-resource "aws_subnet" "private" {
+resource "aws_subnet" "pri" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
   availability_zone = "us-east-1a"
@@ -63,12 +63,12 @@ resource "aws_route_table_association" "private_assoc" {
 resource "aws_instance" "public_instance" {
   ami           = "ami-0c614dee691cbbf37"  
   instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public.id
+  subnet_id     = aws_subnet.pub.id
   associate_public_ip_address = true
 }
 
 resource "aws_instance" "private_instance" {
   ami           = "ami-0c614dee691cbbf37" 
   instance_type = "t2.micro"
-  subnet_id     = aws_subnet.private.id
+  subnet_id     = aws_subnet.pri.id
 }
